@@ -1,7 +1,7 @@
 from Crypto.Cipher import AES
 from Crypto import Random
 
-BS = AES.block_size
+BS = AES.block_size #16
 
 def encryptFile(master, p_filename):
     #randomly generate key
@@ -43,7 +43,7 @@ def encryptAES(key, plaintext):
 
 #perform AES decryption
 def decryptAES(key, encrypted):
-    iv = encrypted[:BS]
+    iv = encrypted[:16]
     cipher = AES.new(pad(key), AES.MODE_CBC, iv)
     plaintext = unpad(cipher.decrypt(encrypted[16:]))
     return plaintext
@@ -72,5 +72,5 @@ if __name__ == '__main__':
     jpg_file = "include/test.jpg"
     txt_key = encryptFile(password, txt_file)
     decryptFile(txt_file, txt_key, password)
-    #jpg_key = encryptFile(password, jpg_file)
-    #decryptFile(jpg_file, txt_key, password)
+    jpg_key = encryptFile(password, jpg_file)
+    decryptFile(jpg_file, txt_key, password)
