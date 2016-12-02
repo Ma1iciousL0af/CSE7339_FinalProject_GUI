@@ -1,78 +1,76 @@
 from Crypto.Cipher import AES
 from Crypto import Random
 
+BS = AES.block_size
+
 def encryptFile(master, p_filename):
     #randomly generate key
-    random = Random.new().read(AES.block_size)
-    print(random)
+    random = Random.new().read(BS)
 
-    #consider writing a function for this later
     #read plaintext file
-    p_file = open(p_filename, 'r+')
-    p_text = p_file.read()
-    p_file.close()
+    p_text = readFile(p_filename)
     
     #perform AES encryption on data using random key
     e_text = encryptAES(random, p_text)
 
     #write encrypted data to file
-    e_file = open(p_filename, 'r+')
-    e_file.truncate()
-    e_file.write(e_text)
-    e_file.close()
+    writeFile(p_filename, e_text)
 
     #perform AES encryption on random key using master key
     e_key = encryptAES(master, random)
 
-##    return (e_file, e_key)
-    decryptFile(p_filename, e_key, master)
+    return e_key
 
 def decryptFile(e_filename, e_key, master):
     #perform AES decryption on random key using master key
     random = decryptAES(master, e_key)
-    print(random)
 
-    #consider writing a function for this later
     #read encrypted file
-    e_file = open(e_filename, 'r+')
-    e_text = e_file.read()
-    e_file.close()
+    e_text = readFile(e_filename)
 
     #perform AES decryption on encrypted file using random key
     p_text = decryptAES(random, e_text)
 
     #write decrypted data to file
-    p_file = open(e_filename, 'r+')
-    p_file.truncate()
-    p_file.write(p_text)
-    p_file.close()
-
-    print(p_file)
-    return p_file
-
+    writeFile(e_filename, p_text)
+    
 #perform AES encryption
 def encryptAES(key, plaintext):
-    raw = pad(plaintext)
-    iv = Random.new().read( AES.block_size )
-    cipher = AES.new(pad(key), AES.MODE_CFB, iv)
-    encrypted = iv + cipher.encrypt(raw)
+    iv = Random.new().read(BS)
+    cipher = AES.new(pad(key), AES.MODE_CBC, iv)
+    encrypted = iv + cipher.encrypt(pad(plaintext))
     return encrypted
 
 #perform AES decryption
 def decryptAES(key, encrypted):
-    iv = encrypted[AES.block_size]
-    cipher = AES.new(pad(key), AES.MODE_CFB, iv)
+    iv = encrypted[:BS]
+    cipher = AES.new(pad(key), AES.MODE_CBC, iv)
     plaintext = unpad(cipher.decrypt(encrypted[16:]))
-    print(plaintext)
     return plaintext
 
 def pad(s):
-    BS = 16
     return s + (BS - len(s) % BS) * chr(BS - len(s) % BS)
 
 def unpad(s):
     return s[:-ord(s[len(s)-1:])]
 
+def readFile(filename):
+    myfile = open(filename, 'r+')
+    mytext = myfile.read()
+    myfile.close()    
+    return mytext
+
+def writeFile(filename, data):
+    myfile = open(filename, 'r+')
+    myfile.truncate()
+    myfile.write(data)
+    myfile.close()
 
 if __name__ == '__main__':
-  encryptFile("0000", "include/test.txt")
+    password = "0000"
+    txt_file = "include/test.txt"
+    jpg_file = "include/test.jpg"
+    txt_key = encryptFile(password, txt_file)
+    decryptFile(txt_file, txt_key, password)
+    #jpg_key = encryptFile(password, jpg_file)
+    #decryptFile(jpg_file, txt_key, password)
