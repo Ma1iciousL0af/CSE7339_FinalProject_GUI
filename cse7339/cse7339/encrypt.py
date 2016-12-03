@@ -1,94 +1,61 @@
-from Crypto.Cipher import AES
 from Crypto import Random
-
-BS = AES.block_size #16
-
-def encryptFile(master, p_filename):
-    #randomly generate key
-    #random = Random.new().read(BS)
-
-    #read plaintext file
-    key = pad(master)
-    p_text = readFile(p_filename)
-
-    #perform AES encryption on data using random key
-    if ".txt" in p_filename:
-        e_text = encryptAES(key, p_text)
-    if ".jpg" in p_filename:
-        e_text = encryptAES_jpg(key, p_text)
-    #write encrypted data to file
-
-    writeFile(p_filename, e_text)
-
-    #perform AES encryption on random key using master key
-    #e_key = encryptAES(master, random)
-
-    #return e_key
-
-def decryptFile(e_filename,  master):
-    #perform AES decryption on random key using master key
-    #random = decryptAES(master, e_key)
-
-    #read encrypted file
-    e_text = readFile(e_filename)
-
-    #perform AES decryption on encrypted file using random key
-    if ".txt" in e_filename:
-        p_text = decryptAES(master, e_text)
-    if ".jpg" in e_filename:
-        p_text = decryptAES_jpg(master, e_text)
-
-    #write decrypted data to file
-    writeFile(e_filename, p_text)
-
-#perform AES encryption
-def encryptAES(key, plaintext):
-    iv = Random.new().read(BS)
-    cipher = AES.new(key, AES.MODE_CBC, iv)
-    encrypted = iv + cipher.encrypt(pad(plaintext))
-    return encrypted
-
-def encryptAES_jpg(key, plaintext):
-    iv = Random.new().read(BS)
-    cipher = AES.new(pad(key), AES.MODE_CFB, iv)
-    encrypted = iv + cipher.encrypt(pad(plaintext))
-    return encrypted
-#perform AES decryption
-def decryptAES(key, encrypted):
-    iv = encrypted[:16]
-    cipher = AES.new(pad(key), AES.MODE_CBC, iv)
-    plaintext = unpad(cipher.decrypt(encrypted[16:]))
-    return plaintext
-
-def decryptAES_jpg(key, encrypted):
-    iv = encrypted[:16]
-    cipher = AES.new(pad(key), AES.MODE_CFB, iv)
-    plaintext = unpad(cipher.decrypt(encrypted[16:]))
-    return plaintext
+from Crypto.Random import random
+from Crypto.Cipher import AES
+from Crypto.Protocol.KDF import PBKDF2
+import os
+from shutil import copyfile
 
 def pad(s):
-    return s + (BS - len(s) % BS) * chr(BS - len(s) % BS)
+    return s + b"\0" * (AES.block_size - len(s) % AES.block_size)
 
-def unpad(s):
-    return s[:-ord(s[len(s)-1:])]
+def generateKey(password):
+    #generate randomly generated key from master password
+    salt = Random.new().read(8)
+    iterations = 5000
+    dkLen = 32
+    key = PBKDF2(password, salt, dkLen = 32, count = iterations)
+    return key
 
-def readFile(filename):
-    myfile = open(filename, 'r+')
-    mytext = myfile.read()
-    myfile.close()
-    return mytext
+def encrypt (message, key, key_size=256):
+    message = pad(message)
+    iv = Random.new().read(AES.block_size)
+    cipher = AES.new(key, AES.MODE_CBC, iv)
+    return iv + cipher.encrypt(message)
 
-def writeFile(filename, data):
-    myfile = open(filename, 'r+')
-    myfile.truncate()
-    myfile.write(data)
-    myfile.close()
+def decrypt(ciphertext, key):
+    iv = ciphertext[:AES.block_size]
+    cipher = AES.new(key, AES.MODE_CBC, iv)
+    plaintext = cipher.decrypt(ciphertext[AES.block_size:])
+    return plaintext.rstrip(b"\0")
+
+def encryptFile(file_name, key):
+    with open(file_name, 'rb') as file:
+        plaintext = file.read()
+    enc = encrypt(plaintext, key)
+    with open(file_name + ".enc", 'wb') as file_out:
+        file_out.write(enc)
+    # copyfile(file_name+".enc", "encrypted")
+    # copying file, intended for testing whether encrypt/decrypt was actually working
+    os.remove(file_name) # remove old plaintext file
+    if ".enc" in file_name + ".enc":
+        os.rename(file_name + ".enc", file_name) #rename .enc file to the original filename
+        #yes I tried doing the encryption in place, it was doing weird stuff. 
+
+
+def decryptFile(file_name, key):
+    with open(file_name, 'rb') as file:
+        ciphertext = file.read()
+        print "success"
+    dec = decrypt(ciphertext, key)
+    with open(file_name,'wb') as file:
+        file.write(dec)
 
 if __name__ == '__main__':
-    password = "0000"
+    password = '0000'
+    key = generateKey(password)
     txt_file = "include/test.txt"
     jpg_file = "include/test.jpg"
-    encryptFile(password, txt_file)
-    decryptFile(txt_file, password)
-    jpg_key = encryptFile(password, jpg_file)
-    decryptFile(jpg_file, password)
+    encryptFile(txt_file, key)
+    decryptFile(txt_file, key)
+    encryptFile(jpg_file, key)
+    decryptFile(jpg_file, key)
