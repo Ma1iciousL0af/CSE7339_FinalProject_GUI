@@ -8,10 +8,11 @@
 		<button type="submit">Upload</button>
 	</form>
 
-	{% if file_name %}
+	{% if file_name and uploaded %}
     	<p>File uploaded: <a href="{{ file_name }}">{{ file_name }}</a></p>
-  	{% endif %}
-  	{% else %}
- 	   <p>File upload failed.</p>
+  	{% elif file_name and not uploaded %}
+ 		<p>File upload failed.</p>
+ 	{% else %}
+ 		<p></p>
   	{% endif %}
 {% endblock %}
