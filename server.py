@@ -1,7 +1,8 @@
 import os
 from flask import Flask, Response, flash, request, redirect, url_for
-from flask.ext.login import LoginManager, UserMixin, login_required
+from flask_login import LoginManager, UserMixin, login_required, current_user
 from werkzeug.utils import secure_filename
+import encrypt
 
 UPLOAD_FOLDER = './uploads'
 
@@ -44,14 +45,20 @@ def index():
         if 'file' not in request.files:
             flash('No File')
             return redirect(request.url)
-        file = request.files['file']
-        if file.filename == '':
+        myfile = request.files['file']
+        if myfile.filename == '':
             flash('No File')
             return redirect(request.url)
-        if file:
-            filename = secure_filename(file.filename)
-            file.save(os.path.join(app.config['UPLOAD_FOLDER'], filename))
+        if myfile:
+            filename = secure_filename(myfile.filename)
+            filepath = os.path.abspath(filename)
+            myfile.save(filepath)
+            key = encrypt.generateKey("0000")
+            if key:
+                myfile = encrypt.encryptFile(filepath, key)
+                myfile.save(filepath)
             return redirect(url_for('index', filename=filename))
+            return redirect(request.url)
 
     return '''
     <!doctype html>
