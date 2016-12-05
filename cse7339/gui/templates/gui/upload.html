@@ -1,6 +1,13 @@
 {% load static %}
 {% block content %}
 <h1>Upload File</h1>
+	
+	<select>
+  		<option value="google">Google Drive</option>
+  		<option value="dropbox">Dropbox</option>
+  		<option value="box">Box</option>
+	</select>
+		
 
 	<form method="post" enctype="multipart/form-data">
 		{% csrf_token %}

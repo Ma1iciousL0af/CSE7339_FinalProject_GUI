@@ -7,7 +7,7 @@ class API(Enum):
     DRIVE, DROPBOX, BOX = range(3)
 
 
-class CloudStorageAppDatabase(object):
+class AppDatabase(object):
     def __init__(self, db_file='sqlite3.db'):
         self.__conn=sqlite3.connect(db_file)
         stmt = \
@@ -131,7 +131,7 @@ class CredentialsWrapper(object):
     def __init__(self, username, password, db_file='sqlite3.db'):
         self.__username = username
         self.__password = password
-        self.db = CloudStorageAppDatabase(db_file)
+        self.db = AppDatabase(db_file)
 
     def add_user(self):
         return self.db.add_user(self.__username, self.__password)

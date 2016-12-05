@@ -14,6 +14,8 @@ def upload_file(request):
         myfile = request.FILES['myfile']
         fs = FileSystemStorage()
         file_name = myfile.name #fs.save(myfile.name, myfile)
+
+        ######insert API implementation here######
         uploaded = True
         context = {'file_name': file_name,
                    'uploaded': uploaded}
