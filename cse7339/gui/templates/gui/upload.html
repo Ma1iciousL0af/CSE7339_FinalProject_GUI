@@ -1,15 +1,17 @@
 {% load static %}
+{% block content %}
 <h1>Upload File</h1>
 
+	<form method="post" enctype="multipart/form-data">
+		{% csrf_token %}
+		<input type="file" name="myfile">
+		<button type="submit">Upload</button>
+	</form>
 
-{% block content %}
-  <form method="post" enctype="multipart/form-data">
-    {% csrf_token %}
-    <input type="file" name="myfile">
-    <button type="submit">Upload</button>
-  </form>
-
-  {% if file_name %}
-    <p>File uploaded: <a href="{{ file_name }}">{{ file_name }}</a></p>
-  {% endif %}
-  {% endblock %}
+	{% if file_name %}
+    	<p>File uploaded: <a href="{{ file_name }}">{{ file_name }}</a></p>
+  	{% endif %}
+  	{% else %}
+ 	   <p>File upload failed.</p>
+  	{% endif %}
+{% endblock %}

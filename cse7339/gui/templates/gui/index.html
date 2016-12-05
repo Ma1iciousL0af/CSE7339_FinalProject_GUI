@@ -1,1 +1,10 @@
-<p>It looks like we got it</p>
+{% load static %}
+{% block content %}
+<h1>Welcome to the Secure File Upload</h1>
+
+<select>
+  <option value="google">Google Drive</option>
+  <option value="dropbox">Dropbox</option>
+  <option value="box">Box</option>
+</select>
+{% endblock %}
