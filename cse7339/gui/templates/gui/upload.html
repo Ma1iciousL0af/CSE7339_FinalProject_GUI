@@ -1,25 +1,26 @@
 {% load static %}
 {% block content %}
-<h1>Upload File</h1>
-	
-	<select>
-  		<option value="google">Google Drive</option>
-  		<option value="dropbox">Dropbox</option>
-  		<option value="box">Box</option>
-	</select>
-	<br>
-	<br>
-	<br>
-	<br>	
+<h1>Upload File</h1>	
 
-	<form method="post" enctype="multipart/form-data">
+	<form method="post" enctype="multipart/form-data"> 
 		{% csrf_token %}
+		<select name="dropdown" >
+  			<option value="google">Google Drive</option>
+  			<option value="dropbox">Dropbox</option>
+  			<option value="box">Box</option>
+		</select>
+	<br>
+	<br>
+	<br>
+	<br>
 		<input type="file" name="myfile">
 		<button type="submit">Upload</button>
 	</form>
 
 	{% if file_name and uploaded %}
-    	<p>File uploaded: <a href="{{ file_name }}">{{ file_name }}</a></p>
+    	<p>File uploaded: <a href="{{ file_name }}">{{ file_name }}</a>
+    		<br>
+    		API selected: {{ API }}</p>
   	{% elif file_name and not uploaded %}
  		<p>File upload failed.</p>
  	{% else %}

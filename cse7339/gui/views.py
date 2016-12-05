@@ -10,6 +10,7 @@ def index(request):
 
 def upload_file(request):
     uploaded = False
+    api = ""
     if request.method == 'POST' and request.FILES['myfile']:
         myfile = request.FILES['myfile']
         fs = FileSystemStorage()
@@ -17,7 +18,8 @@ def upload_file(request):
 
         ######insert API implementation here######
         uploaded = True
-        context = {'file_name': file_name,
+        context = {'dropdown': dropdown,
+                   'file_name': file_name,
                    'uploaded': uploaded}
         return render(request, 'upload.html', context)
     return render(request, 'upload.html')
